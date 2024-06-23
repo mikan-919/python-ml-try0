@@ -19,12 +19,12 @@ for i in range(iters_num):
     batch_mask = np.random.choice(train_size, batch_size)
     batch_image = train_image[batch_mask]
     batch_label = train_label[batch_mask]
-
+    print("iter: " + i + " ---------------------------------")
     grad = network.numerical_gradient(batch_image, batch_label)
 
     for key in ("w1", "b1", "w2", "b2"):
         network.params[key] -= learning_rate * grad[key]
 
-    loss = network(batch_image, batch_label)
+    loss = network.loss(batch_image, batch_label)
     print("Loss: " + loss)
     train_loss_list.append(loss)
