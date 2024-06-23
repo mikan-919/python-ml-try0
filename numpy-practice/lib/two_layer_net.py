@@ -33,9 +33,9 @@ class TwoLayerNet:
 
         grads = {}
 
-        grads["w1"] = com.numerical_gradient(loss_w, self.params["w1"])
-        grads["b1"] = com.numerical_gradient(loss_w, self.params["b1"])
-        grads["w2"] = com.numerical_gradient(loss_w, self.params["w2"])
-        grads["b2"] = com.numerical_gradient(loss_w, self.params["b2"])
+        grads["w1"] = com.numerical_gradient(loss_w, self.params["w1"], "勾配: w1")
+        grads["b1"] = com.numerical_gradient(loss_w, self.params["b1"], "勾配: b1")
+        grads["w2"] = com.numerical_gradient(loss_w, self.params["w2"], "勾配: w2")
+        grads["b2"] = com.numerical_gradient(loss_w, self.params["b2"], "勾配: b2")
 
         return grads
