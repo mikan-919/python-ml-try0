@@ -1,51 +1,30 @@
-import mnist
+from lib import mnist, common, two_layer_net
 import numpy as np
 
 np.set_printoptions(linewidth=300)
 
+(train_image, train_label), (test_image, test_label) = mnist.load_mnist(
+    flatten=True, normalize=True, one_hot=True
+)
+train_loss_list = []
 
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
+iters_num = 10000
+train_size = train_image.shape[0]
+batch_size = 100
+learning_rate = 0.1
 
+network = two_layer_net.TwoLayerNet(784, 50, 10)
 
-def identity_function(x):
-    return x
+for i in range(iters_num):
+    batch_mask = np.random.choice(train_size, batch_size)
+    batch_image = train_image[batch_mask]
+    batch_label = train_label[batch_mask]
 
+    grad = network.numerical_gradient(batch_image, batch_label)
 
-def softmax(a):
-    c = np.max(a)
-    exp_a = np.exp(a - c)
-    sum_exp_a = np.sum(exp_a)
-    return exp_a / sum_exp_a
+    for key in ("w1", "b1", "w2", "b2"):
+        network.params[key] -= learning_rate * grad[key]
 
-
-def init_network():
-    network = {}
-    network["W1"] = np.array([[0.1, 0.3, 0.5], [0.2, 0.4, 0.6]])
-    network["W2"] = np.array([[0.1, 0.4], [0.2, 0.5], [0.3, 0.6]])
-    network["W3"] = np.array([[0.1, 0.3], [0.2, 0.4]])
-    network["b1"] = np.array([0.1, 0.2, 0.3])
-    network["b2"] = np.array([0.1, 0.2])
-    network["b3"] = np.array([0.1, 0.2])
-    return network
-
-
-def forward(network, x):
-    a1 = np.dot(x, network["W1"]) + network["b1"]
-    z1 = sigmoid(a1)
-    a2 = np.dot(z1, network["W2"]) + network["b2"]
-    z2 = sigmoid(a2)
-    a3 = np.dot(z2, network["W3"]) + network["b3"]
-
-    y = identity_function(a3)
-
-    return y
-
-
-network = init_network()
-x = np.array([1.0, 0.5])
-y = forward(network, x)
-print(y)
-dataset = mnist.load_mnist(one_hot=True)
-print(dataset[0][1][1])
-print(dataset[0][1][0])
+    loss = network(batch_image, batch_label)
+    print("Loss: " + loss)
+    train_loss_list.append(loss)
