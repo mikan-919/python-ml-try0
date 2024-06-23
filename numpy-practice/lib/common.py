@@ -1,5 +1,5 @@
 import numpy as np
-import tqdm
+from rich.progress import track
 
 
 def sigmoid(x):
@@ -26,11 +26,11 @@ def cross_entropy_error(y, t):
     return -np.sum(t * np.log(y + 1e-7)) / batch_size
 
 
-def numerical_gradient(f, x):
+def numerical_gradient(f, x, title="勾配の計算"):
     h = 1e-4
     grad = np.zeros_like(x)
 
-    for idx in tqdm.tqdm(range(x.size)):
+    for idx in track(range(x.size), description=title):
         tmp_val = x.flat[idx]
 
         x.flat[idx] = tmp_val + h
