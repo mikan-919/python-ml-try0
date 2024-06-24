@@ -11,8 +11,10 @@ class TwoLayerNet:
         self.params["b2"] = weight_init_std * np.zeros(output_size)
 
     def predict(self, x):
-        z1 = com.sigmoid(np.dot(x, self.params["w1"]) + self.params["b1"])
-        y = com.softmax(np.dot(z1, self.params["w2"]) + self.params["b2"])
+        a1 = np.dot(x, self.params["w1"]) + self.params["b1"]
+        z1 = com.sigmoid(a1)
+        a2 = np.dot(z1, self.params["w2"]) + self.params["b2"]
+        y = com.softmax(a2)
 
         return y
 
@@ -29,13 +31,37 @@ class TwoLayerNet:
         return accuracy
 
     def numerical_gradient(self, x, t):
-        loss_w = lambda W: self.loss(x, t)
-
         grads = {}
 
-        grads["w1"] = com.numerical_gradient(loss_w, self.params["w1"], "勾配: w1")
-        grads["b1"] = com.numerical_gradient(loss_w, self.params["b1"], "勾配: b1")
-        grads["w2"] = com.numerical_gradient(loss_w, self.params["w2"], "勾配: w2")
-        grads["b2"] = com.numerical_gradient(loss_w, self.params["b2"], "勾配: b2")
+        grads["w1"] = com.numerical_gradient(lambda: self.loss(x, t), self.params["w1"])
+        grads["b1"] = com.numerical_gradient(lambda: self.loss(x, t), self.params["b1"])
+        grads["w2"] = com.numerical_gradient(lambda: self.loss(x, t), self.params["w2"])
+        grads["b2"] = com.numerical_gradient(lambda: self.loss(x, t), self.params["b2"])
+
+        return grads
+
+    def gradient(self, x, t):
+        """5章で学ぶ関数。誤差逆伝播法の実装"""
+        W1, W2 = self.params["w1"], self.params["w2"]
+        b1, b2 = self.params["b1"], self.params["b2"]
+        grads = {}
+
+        batch_num = x.shape[0]
+
+        # forward
+        a1 = np.dot(x, W1) + b1
+        z1 = com.sigmoid(a1)
+        a2 = np.dot(z1, W2) + b2
+        y = com.softmax(a2)
+
+        # backward
+        dy = (y - t) / batch_num
+        grads["w2"] = np.dot(z1.T, dy)
+        grads["b2"] = np.sum(dy, axis=0)
+
+        dz1 = np.dot(dy, W2.T)
+        da1 = com.sigmoid_grad(a1) * dz1
+        grads["w1"] = np.dot(x.T, da1)
+        grads["b1"] = np.sum(da1, axis=0)
 
         return grads
