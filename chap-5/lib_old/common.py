@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def identity_function(x):
+def identity_function(x: np.ndarray | np.number) -> np.ndarray | np.number:
     return x
 
 
