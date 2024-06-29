@@ -10,12 +10,13 @@ np.set_printoptions(linewidth=300, precision=5)
     flatten=True, normalize=True, one_hot=True
 )
 
-iteration_num = 1000
-batch_size = 100
-learning_rate = 0.2
+iteration_num = 10000
+batch_size = 300
+learning_rate = 0.5
 train_size = train_image.shape[0]
 epoch_size = int(max(train_size / batch_size, 1))
 epoch_iter = ceil(iteration_num / epoch_size)
+learning_rate_decrase_rate = learning_rate / epoch_iter
 print("Epoch iter: " + str(epoch_iter))
 print("Epoch size: " + str(epoch_size))
 print("Learning Rate: " + str(learning_rate))
@@ -23,13 +24,13 @@ print("Learning Rate: " + str(learning_rate))
 train_loss_list = []
 train_acc_list = []
 test_acc_list = []
-network_shape = (784, 50, 10)
-network = twolayernet.TwoLayerNet(*network_shape, weight_init_std=0.1)
-print("Network Shape: " + str())
+network_shape = (784, 28, 10)
+network = twolayernet.TwoLayerNet(*network_shape)
+print("Network Shape: " + str(network_shape))
 print("======== ======== ======== ======== ======== ======== ======== ")
 
-for i in range(epoch_iter):
-    for j in track(range(epoch_size), description="Epoch-" + str(i)):
+for i in track(range(epoch_iter), description="Training..."):
+    for j in range(epoch_size):
         batch_mask = np.random.choice(train_size, batch_size)
         batch_image = train_image[batch_mask]
         batch_label = train_label[batch_mask]
@@ -47,7 +48,13 @@ for i in range(epoch_iter):
     test_acc = network.accuracy(test_image, test_label)
     train_acc_list.append(train_acc)
     test_acc_list.append(test_acc)
-    print("Accuracy(test:train) -> " + str(test_acc) + ":" + str(train_acc))
+    print(
+        "Accuracy(test:train) -> "
+        + str(format(test_acc, ".3f"))
+        + ":"
+        + str(format(train_acc, ".3f"))
+    )
+    learning_rate -= learning_rate_decrase_rate
 
 
 x = np.arange(len(train_loss_list))
