@@ -1,6 +1,6 @@
 from collections import OrderedDict
 import numpy as np
-from .layer import *
+from .Layer import *
 
 
 class TwoLayerNet:

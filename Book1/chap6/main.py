@@ -1,5 +1,8 @@
+import sys, os
+
+sys.path.append(os.pardir)
 import numpy as np
-from lib import mnist, twolayernet
+from lib import mnist, twolayernet, Optimizer, mlp
 import matplotlib.pyplot as plt
 from rich.progress import track
 from math import ceil
@@ -12,21 +15,20 @@ np.set_printoptions(linewidth=300, precision=5)
 
 iteration_num = 10000
 batch_size = 300
-learning_rate = 0.5
 train_size = train_image.shape[0]
 epoch_size = int(max(train_size / batch_size, 1))
 epoch_iter = ceil(iteration_num / epoch_size)
-learning_rate_decrase_rate = learning_rate / epoch_iter
 print("Epoch iter: " + str(epoch_iter))
 print("Epoch size: " + str(epoch_size))
-print("Learning Rate: " + str(learning_rate))
 
 train_loss_list = []
 train_acc_list = []
 test_acc_list = []
-network_shape = (784, 28, 10)
-network = twolayernet.TwoLayerNet(*network_shape)
-print("Network Shape: " + str(network_shape))
+network_shape = [100]
+network = mlp.MLP(784, network_shape, 10)
+optimizer = Optimizer.AdaGrad()
+print("Learning Rate: " + str(optimizer.lr))
+print("Network Shape: " + str([784, *network_shape, 10]))
 print("======== ======== ======== ======== ======== ======== ======== ")
 
 for i in track(range(epoch_iter), description="Training..."):
@@ -35,11 +37,10 @@ for i in track(range(epoch_iter), description="Training..."):
         batch_image = train_image[batch_mask]
         batch_label = train_label[batch_mask]
 
-        grad = network.gradient(batch_image, batch_label)
+        grads = network.gradient(batch_image, batch_label)
 
-        for key in ("W1", "B1", "W2", "B2"):
-            network.params[key] -= learning_rate * grad[key]
-
+        params = network.params
+        optimizer.update(params, grads)
         loss = network.loss(batch_image, batch_label)
         train_loss_list.append(loss)
 
@@ -54,7 +55,6 @@ for i in track(range(epoch_iter), description="Training..."):
         + ":"
         + str(format(train_acc, ".3f"))
     )
-    learning_rate -= learning_rate_decrase_rate
 
 
 x = np.arange(len(train_loss_list))
