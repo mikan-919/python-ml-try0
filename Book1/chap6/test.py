@@ -1,41 +1,43 @@
-from math import ceil
-from lib_old import mnist, two_layer_net
 import numpy as np
-from rich.progress import track
+from lib import mnist, twolayernet
 import matplotlib.pyplot as plt
+from rich.progress import track
+from math import ceil
 
-np.set_printoptions(linewidth=300, precision=3)
+np.set_printoptions(linewidth=300, precision=5)
 
 (train_image, train_label), (test_image, test_label) = mnist.load_mnist(
     flatten=True, normalize=True, one_hot=True
 )
 
 iteration_num = 10000
-batch_size = 100
-learning_rate = 0.1
+batch_size = 300
+learning_rate = 0.5
 train_size = train_image.shape[0]
 epoch_size = int(max(train_size / batch_size, 1))
 epoch_iter = ceil(iteration_num / epoch_size)
+learning_rate_decrase_rate = learning_rate / epoch_iter
 print("Epoch iter: " + str(epoch_iter))
-print("Batch size: " + str(batch_size))
-print("Train size: " + str(train_size))
 print("Epoch size: " + str(epoch_size))
-print("======== ======== ======== ======== ======== ======== ======== ")
+print("Learning Rate: " + str(learning_rate))
 
 train_loss_list = []
 train_acc_list = []
 test_acc_list = []
-network = two_layer_net.TwoLayerNet(784, 20, 10)
+network_shape = (784, 28, 10)
+network = twolayernet.TwoLayerNet(*network_shape)
+print("Network Shape: " + str(network_shape))
+print("======== ======== ======== ======== ======== ======== ======== ")
 
-for i in range(epoch_iter):
-    for j in track(range(epoch_size), description="Epoch-" + str(i)):
+for i in track(range(epoch_iter), description="Training..."):
+    for j in range(epoch_size):
         batch_mask = np.random.choice(train_size, batch_size)
         batch_image = train_image[batch_mask]
         batch_label = train_label[batch_mask]
 
         grad = network.gradient(batch_image, batch_label)
 
-        for key in ("w1", "b1", "w2", "b2"):
+        for key in ("W1", "B1", "W2", "B2"):
             network.params[key] -= learning_rate * grad[key]
 
         loss = network.loss(batch_image, batch_label)
@@ -46,7 +48,13 @@ for i in range(epoch_iter):
     test_acc = network.accuracy(test_image, test_label)
     train_acc_list.append(train_acc)
     test_acc_list.append(test_acc)
-    print("Accuracy: " + str(test_acc))
+    print(
+        "Accuracy(test:train) -> "
+        + str(format(test_acc, ".3f"))
+        + ":"
+        + str(format(train_acc, ".3f"))
+    )
+    learning_rate -= learning_rate_decrase_rate
 
 
 x = np.arange(len(train_loss_list))

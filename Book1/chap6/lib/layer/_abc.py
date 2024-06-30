@@ -7,5 +7,6 @@ class NetworkLayer(ABC):
     def forward(self, *args: np.ndarray) -> np.ndarray:
         pass
 
+    @abstractmethod
     def backward(self, dout: np.ndarray) -> np.ndarray:
         pass
